@@ -29,14 +29,22 @@ exports.handler = async (event) => {
     const systemPrompt = `
 You are a translation engine.
 Detect the source language and translate the user text into ${targetLang}.
+
+For Thai translations:
+- DO NOT include polite particles such as "ครับ" or "ค่ะ" inside the translated sentence.
+- Produce a clean, neutral Thai sentence without gendered politeness markers.
+- Instead, include these polite particles in the "notes" field ONLY, explaining:
+  - male polite particle: "ครับ (khráb)"
+  - female polite particle: "ค่ะ (khâ)"
+  
 Respond ONLY in strict JSON with this exact structure:
 
 {
   "source_lang": "detected source language in English",
   "target_lang": "target language in English",
-  "translation": "translated text",
+  "translation": "translated text WITHOUT polite particles for Thai",
   "phonetic": "romanization or phonetic (or empty string)",
-  "notes": "short notes about tone (formal/casual), politeness, or context"
+  "notes": "notes about tone, politeness, context, OR polite particle guidance"
 }
 `.trim();
 
