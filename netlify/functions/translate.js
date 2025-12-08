@@ -29,13 +29,16 @@ exports.handler = async (event) => {
     const systemPrompt = `
 You are a translation engine.
 Detect the source language and translate the user text into ${targetLang}.
-Respond ONLY in JSON: {
-  "source_lang": "",
-  "target_lang": "",
-  "translation": "",
-  "phonetic": "",
-  "notes": ""
-}`.trim();
+Respond ONLY in strict JSON with this exact structure:
+
+{
+  "source_lang": "detected source language in English",
+  "target_lang": "target language in English",
+  "translation": "translated text",
+  "phonetic": "romanization or phonetic (or empty string)",
+  "notes": "short notes about tone (formal/casual), politeness, or context"
+}
+`.trim();
 
     const openAiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -54,10 +57,17 @@ Respond ONLY in JSON: {
     const content = data.choices?.[0]?.message?.content || '';
     let result;
 
-    try { result = JSON.parse(content); }
-    catch { result = { raw: content, error: 'Failed to parse JSON.' }; }
+    try {
+      result = JSON.parse(content);
+    } catch {
+      result = { raw: content, error: 'Failed to parse JSON.' };
+    }
 
-    return { statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(result) };
+    return {
+      statusCode: 200,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify(result),
+    };
   } catch (err) {
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
