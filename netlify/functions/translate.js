@@ -34,18 +34,15 @@ SPECIAL RULES FOR THAI OUTPUT:
 - Write the translation in natural, casual spoken Thai (ภาษาพูดทั่วไป), the way Thai people really speak.
 - It must still be polite, but not overly formal or textbook-like.
 - DO NOT include polite particles such as "ครับ" or "ค่ะ" in the Thai translation itself.
-- Instead, include polite particle guidance ONLY in the "notes" field:
-    - Male speaker: "ครับ (khráb)"
-    - Female speaker: "ค่ะ (khâ)"
 - Avoid literal translations if unnatural. Prioritize natural spoken Thai phrasing.
 - Keep sentences concise, friendly, and typical of everyday conversation.
-  
-Respond ONLY in strict JSON with this exact structure:
+
+Respond ONLY in strict JSON with this structure:
 
 {
   "source_lang": "detected source language in English",
   "target_lang": "target language in English",
-  "translation": "natural casual Thai WITHOUT polite particles",
+  "translation": "natural casual Thai WITHOUT polite particles (or target language text if not Thai)",
   "phonetic": "romanization or phonetic (or empty string)",
   "notes": "guidance on polite particles or tone"
 }
