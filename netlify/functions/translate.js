@@ -37,6 +37,11 @@ SPECIAL RULES FOR THAI OUTPUT:
 - Avoid literal translations if unnatural. Prioritize natural spoken Thai phrasing.
 - Keep sentences concise, friendly, and typical of everyday conversation.
 
+IMPORTANT RULES FOR ALL LANGUAGES:
+- The "notes" field MUST ALWAYS be written in clear English.
+- The "notes" field should describe tone, politeness, or usage guidance, not repeat the translation.
+- Do NOT write the notes in Thai or any other target language — English ONLY.
+
 Respond ONLY in strict JSON with this structure:
 
 {
@@ -44,7 +49,7 @@ Respond ONLY in strict JSON with this structure:
   "target_lang": "target language in English",
   "translation": "natural casual Thai WITHOUT polite particles (or target language text if not Thai)",
   "phonetic": "romanization or phonetic (or empty string)",
-  "notes": "guidance on polite particles or tone"
+  "notes": "English-only description of tone, politeness, and usage"
 }
 `.trim();
 
