@@ -15,9 +15,7 @@
       --text-muted: #6b7280;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -40,9 +38,7 @@
     }
 
     @media (min-width: 640px) {
-      .card {
-        padding: 28px 28px 32px;
-      }
+      .card { padding: 28px 28px 32px; }
     }
 
     h1 {
@@ -59,9 +55,7 @@
       color: var(--text-muted);
     }
 
-    .row {
-      margin-bottom: 16px;
-    }
+    .row { margin-bottom: 16px; }
 
     .label {
       font-weight: 600;
@@ -126,9 +120,7 @@
       box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
     }
 
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
+    .btn-primary:hover { background: var(--primary-hover); }
 
     .btn-primary:active {
       transform: translateY(1px);
@@ -189,6 +181,39 @@
       font-size: 0.85rem;
       margin-top: 6px;
     }
+
+    .gender-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #f9fafb;
+      font-size: 0.85rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .chip input {
+      appearance: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      border: 2px solid #9ca3af;
+      position: relative;
+    }
+
+    .chip input:checked {
+      border-color: var(--primary);
+      background-color: var(--primary);
+    }
   </style>
 </head>
 <body>
@@ -212,6 +237,23 @@
           <option value="Korean">Korean</option>
           <option value="Chinese">Chinese</option>
         </select>
+      </div>
+
+      <div class="row">
+        <span class="label">Speaker</span>
+        <div class="gender-row">
+          <label class="chip">
+            <input type="radio" name="gender" value="male" checked />
+            <span>Male</span>
+          </label>
+          <label class="chip">
+            <input type="radio" name="gender" value="female" />
+            <span>Female</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="row">
         <div class="controls-row">
           <button id="translateBtn" class="btn btn-primary">Translate</button>
           <button id="speakBtn" class="btn btn-secondary" disabled>Play translation</button>
@@ -249,17 +291,18 @@
     const targetLangEl = document.getElementById('targetLang');
     const translateBtn = document.getElementById('translateBtn');
     const speakBtn = document.getElementById('speakBtn');
-
     const translationEl = document.getElementById('translation');
     const phoneticEl = document.getElementById('phonetic');
     const notesEl = document.getElementById('notes');
     const errorEl = document.getElementById('error');
-
     const sourceLangPill = document.getElementById('sourceLangPill');
     const sourceLangValue = document.getElementById('sourceLangValue');
+    const genderInputs = document.querySelectorAll('input[name="gender"]');
 
     let lastTranslationText = '';
     let lastTargetLangCode = '';
+    let baseThaiTranslation = '';
+    let baseThaiPhonetic = '';
 
     const langCodeMap = {
       Thai: 'th-TH',
@@ -274,6 +317,13 @@
       return langCodeMap[label] || 'en-US';
     }
 
+    function getGender() {
+      for (const g of genderInputs) {
+        if (g.checked) return g.value;
+      }
+      return 'male';
+    }
+
     function speak(text, langCode) {
       if (!('speechSynthesis' in window)) {
         alert('Text-to-Speech is not supported in this browser.');
@@ -282,11 +332,30 @@
       if (!text.trim()) return;
 
       window.speechSynthesis.cancel();
-
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = langCode;
       window.speechSynthesis.speak(utterance);
     }
+
+    function applyThaiPoliteness() {
+      if (targetLangEl.value !== 'Thai' || !baseThaiTranslation) return;
+      const gender = getGender();
+      const particleText = gender === 'female' ? 'ค่ะ' : 'ครับ';
+      translationEl.textContent = baseThaiTranslation + ' ' + particleText;
+      lastTranslationText = translationEl.textContent;
+
+      if (baseThaiPhonetic) {
+        let phon = baseThaiPhonetic.replace(/\s*(khrab|khrap|khráp|kha|khâ)\s*$/i, '');
+        const particlePhon = gender === 'female' ? 'kha' : 'khrab';
+        phoneticEl.textContent = phon + ' ' + particlePhon;
+      }
+    }
+
+    genderInputs.forEach((input) => {
+      input.addEventListener('change', () => {
+        applyThaiPoliteness();
+      });
+    });
 
     translateBtn.addEventListener('click', async () => {
       const text = inputTextEl.value.trim();
@@ -301,6 +370,8 @@
       speakBtn.disabled = true;
       lastTranslationText = '';
       lastTargetLangCode = '';
+      baseThaiTranslation = '';
+      baseThaiPhonetic = '';
 
       if (!text) {
         errorEl.textContent = 'Please enter some text.';
@@ -322,16 +393,26 @@
           throw new Error(data.error || 'Request failed');
         }
 
-        translationEl.textContent = data.translation || data.raw || '';
-        phoneticEl.textContent = data.phonetic || '';
-        notesEl.textContent = data.notes || '';
+        let baseTranslation = data.translation || data.raw || '';
+        let basePhon = data.phonetic || '';
 
         if (data.source_lang) {
           sourceLangValue.textContent = data.source_lang;
           sourceLangPill.style.display = 'inline-flex';
         }
 
-        lastTranslationText = translationEl.textContent;
+        if (targetLang === 'Thai' && baseTranslation) {
+          baseTranslation = baseTranslation.replace(/\s*(ครับ|ค่ะ)\s*$/u, '');
+          baseThaiTranslation = baseTranslation;
+          baseThaiPhonetic = basePhon;
+          applyThaiPoliteness();
+        } else {
+          translationEl.textContent = baseTranslation;
+          phoneticEl.textContent = basePhon;
+          lastTranslationText = baseTranslation;
+        }
+
+        notesEl.textContent = data.notes || '';
         lastTargetLangCode = getLangCode(targetLang);
         speakBtn.disabled = !lastTranslationText.trim();
 
