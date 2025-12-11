@@ -16,7 +16,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { text, targetLang, options, action, translation } = JSON.parse(event.body || '{}');
+    const { text, sourceLang, targetLang, options, action, translation } = JSON.parse(event.body || '{}');
     if (!text || !targetLang) {
       return { statusCode: 400, body: JSON.stringify({ error: 'Missing text or targetLang' }) };
     }
@@ -26,6 +26,7 @@ exports.handler = async (event) => {
       return { statusCode: 500, body: JSON.stringify({ error: 'OPENAI_API_KEY not set' }) };
     }
 
+    const srcLang = sourceLang || 'auto';
     const opts = options || {};
     const optionsDescription = JSON.stringify(opts);
 
@@ -34,7 +35,7 @@ exports.handler = async (event) => {
 You are a language teacher helping a learner understand a translation.
 
 Input JSON (as string):
-${JSON.stringify({ text, targetLang, translation, options: opts })}
+${JSON.stringify({ text, sourceLang: srcLang, targetLang, translation, options: opts })}
 
 Requirements:
 - Explain the translation in clear English.
@@ -83,8 +84,14 @@ Requirements:
 You are a translation engine.
 
 Context:
+- Requested source language: ${srcLang}
 - Target language: ${targetLang}
 - Options (JSON): ${optionsDescription}
+
+Source language handling:
+- If requested source language is "auto", you MUST detect the actual source language from the text.
+- If requested source language is a specific language (e.g., "Thai", "Malay", "French"), you MUST treat the input text as being written in that language and translate from there.
+- In the "source_lang" field, you should report the detected/assumed source language in English. If the requested source differs slightly from detection, prefer the requested one but you may note the actual detection in the "notes" field.
 
 Options meaning (if present):
 - gender: "male" or "female" (for how the user will speak, mainly relevant to Thai polite particles)
@@ -123,18 +130,18 @@ SPECIAL RULES FOR KOREAN:
 
 RULES FOR NOTES:
 - The "notes" field MUST ALWAYS be written in clear English.
-- Use "notes" to explain tone, politeness level, and any important usage tips.
+- Use "notes" to explain tone, politeness level, any important usage tips, and (if relevant) source-language detection vs requested source.
 - For French/Spanish, use notes to mention formality (e.g., "tu" vs "vous" or "tú" vs "usted") when relevant.
 - Do NOT write notes in the target language.
 
 Respond ONLY in strict JSON with this structure:
 
 {
-  "source_lang": "detected source language in English",
+  "source_lang": "detected or assumed source language in English",
   "target_lang": "target language in English",
   "translation": "translated text (respecting rules above)",
   "phonetic": "romanization or phonetic (or empty string if truly not needed)",
-  "notes": "English-only description of tone, politeness, and usage"
+  "notes": "English-only description of tone, politeness, usage, and any detection comments"
 }
 `.trim();
 
