@@ -30,7 +30,6 @@ exports.handler = async (event) => {
     const opts = options || {};
     const optionsDescription = JSON.stringify(opts);
 
-    // Simple glossary for critical words where we want guaranteed behavior.
     const glossary = {
       "cempedak": {
         "Thai": {
@@ -45,7 +44,6 @@ exports.handler = async (event) => {
     const key = text.trim().toLowerCase();
     const glossaryHit = glossary[key] && glossary[key][targetLang];
 
-    // If glossary contains an exact mapping, return it directly (no model call).
     if (action === 'translate' && glossaryHit) {
       return {
         statusCode: 200,
@@ -60,13 +58,11 @@ exports.handler = async (event) => {
       };
     }
 
-    // Decide model based on language pair and length
     const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
     const lowResourcePair =
       ((srcLang === 'Malay' || srcLang === 'Indonesian') && targetLang === 'Thai') ||
       ((targetLang === 'Malay' || targetLang === 'Indonesian') && srcLang === 'Thai');
 
-    // For very short Malay/Indonesian <-> Thai, use full gpt-4.1 as a "dictionary mode"
     const modelForTranslate = (lowResourcePair && wordCount <= 2) ? 'gpt-4.1' : 'gpt-4.1-mini';
 
     if (action === 'explain') {
