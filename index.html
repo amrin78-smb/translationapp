@@ -259,6 +259,26 @@
       <div class="row options-grid">
         <div>
           <div class="label-row">
+            <span class="label">Source language</span>
+          </div>
+          <select id="sourceLang">
+            <option value="auto">Auto-detect</option>
+            <option value="English">English</option>
+            <option value="Thai">Thai</option>
+            <option value="Malay">Malay</option>
+            <option value="Japanese">Japanese</option>
+            <option value="Korean">Korean</option>
+            <option value="Chinese">Chinese</option>
+            <option value="French">French</option>
+            <option value="Spanish">Spanish</option>
+            <option value="German">German</option>
+            <option value="Indonesian">Indonesian</option>
+            <option value="Vietnamese">Vietnamese</option>
+          </select>
+        </div>
+
+        <div>
+          <div class="label-row">
             <span class="label">Target language</span>
           </div>
           <select id="targetLang">
@@ -388,6 +408,7 @@
     const backendUrl = '/.netlify/functions/translate';
 
     const inputTextEl = document.getElementById('inputText');
+    const sourceLangEl = document.getElementById('sourceLang');
     const targetLangEl = document.getElementById('targetLang');
 
     const translateBtn = document.getElementById('translateBtn');
@@ -538,8 +559,24 @@
       setCopyButtonsState();
     });
 
+    sourceLangEl.addEventListener('change', () => {
+      translationEl.textContent = '';
+      phoneticEl.textContent = '';
+      notesEl.textContent = '';
+      explanationEl.textContent = '';
+      sourceLangPill.style.display = 'none';
+      sourceLangValue.textContent = '';
+      speakBtn.disabled = true;
+      explainBtn.disabled = true;
+      lastTranslationText = '';
+      baseThaiTranslation = '';
+      baseThaiPhonetic = '';
+      setCopyButtonsState();
+    });
+
     translateBtn.addEventListener('click', async () => {
       const text = inputTextEl.value.trim();
+      const sourceLang = sourceLangEl.value;
       const targetLang = targetLangEl.value;
 
       errorEl.textContent = '';
@@ -572,6 +609,7 @@
           body: JSON.stringify({
             action: 'translate',
             text,
+            sourceLang,
             targetLang,
             options: getOptionsPayload(),
           }),
@@ -618,6 +656,7 @@
 
     explainBtn.addEventListener('click', async () => {
       const text = inputTextEl.value.trim();
+      const sourceLang = sourceLangEl.value;
       const targetLang = targetLangEl.value;
       const translationText = translationEl.textContent.trim();
 
@@ -638,6 +677,7 @@
           body: JSON.stringify({
             action: 'explain',
             text,
+            sourceLang,
             targetLang,
             translation: translationText,
             options: getOptionsPayload(),
