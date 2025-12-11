@@ -30,6 +30,45 @@ exports.handler = async (event) => {
     const opts = options || {};
     const optionsDescription = JSON.stringify(opts);
 
+    // Simple glossary for critical words where we want guaranteed behavior.
+    const glossary = {
+      "cempedak": {
+        "Thai": {
+          translation: "จำปาดะ",
+          phonetic: "jampada",
+          source_lang: "Malay",
+          notes: "Malay fruit similar to jackfruit. Standard Thai word is 'จำปาดะ' (jampada); do not transliterate."
+        }
+      }
+    };
+
+    const key = text.trim().toLowerCase();
+    const glossaryHit = glossary[key] && glossary[key][targetLang];
+
+    // If glossary contains an exact mapping, return it directly (no model call).
+    if (action === 'translate' && glossaryHit) {
+      return {
+        statusCode: 200,
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({
+          source_lang: glossaryHit.source_lang || (srcLang === 'auto' ? 'Malay' : srcLang),
+          target_lang: targetLang,
+          translation: glossaryHit.translation,
+          phonetic: glossaryHit.phonetic || '',
+          notes: glossaryHit.notes || 'Result provided from built-in glossary to ensure correct everyday term in the target language.'
+        }),
+      };
+    }
+
+    // Decide model based on language pair and length
+    const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+    const lowResourcePair =
+      ((srcLang === 'Malay' || srcLang === 'Indonesian') && targetLang === 'Thai') ||
+      ((targetLang === 'Malay' || targetLang === 'Indonesian') && srcLang === 'Thai');
+
+    // For very short Malay/Indonesian <-> Thai, use full gpt-4.1 as a "dictionary mode"
+    const modelForTranslate = (lowResourcePair && wordCount <= 2) ? 'gpt-4.1' : 'gpt-4.1-mini';
+
     if (action === 'explain') {
       const explanationPrompt = `
 You are a language teacher helping a learner understand a translation.
@@ -105,6 +144,21 @@ GENERAL RULES:
 - If the target language does not use Latin script (e.g., Thai, Chinese, Japanese, Korean), the "phonetic" field MUST contain a readable romanization.
 - For Latin-script languages (English, French, Spanish, German, Indonesian, Vietnamese), "phonetic" may be IPA or may be an empty string if not necessary.
 
+DICTIONARY MODE FOR VERY SHORT INPUTS (IMPORTANT):
+- If the input consists of 1–2 words, you must behave like a high-quality bilingual dictionary for the requested source and target languages.
+- In dictionary mode, your primary goal is to output the standard everyday target-language word used by native speakers, NOT a transliteration.
+- Only keep or transliterate the source word when it is clearly a proper name (person, brand, specific place) or when there is no widely-used local term in the target language.
+
+TRANSLITERATION VS REAL WORDS (IMPORTANT):
+- If the source text is a word or short phrase referring to a common object, food, place, or concept and there is a standard everyday word in the target language, you MUST use that actual target-language word.
+- Only use a transliteration (writing the source pronunciation in the target script) when:
+  - It is a proper name (person, brand, specific place), OR
+  - There is no widely used local term in the target language.
+- Examples:
+  - Malay "durian" -> Thai "ทุเรียน", not a phonetic spelling.
+  - Malay "cempedak" -> Thai "จำปาดะ", not a Thai transliteration of "cempedak".
+  - If there is a widely recognized borrowed word already established in the target language, use that established form.
+
 SPECIAL RULES FOR THAI OUTPUT:
 - Write the translation in natural spoken Thai (ภาษาพูด), matching the requested thai_formality:
   - "casual": friendly, everyday speech but still polite enough for normal interaction.
@@ -149,7 +203,7 @@ Respond ONLY in strict JSON with this structure:
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'gpt-4.1-mini',
+        model: modelForTranslate,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: text }
