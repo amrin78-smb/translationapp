@@ -2,924 +2,295 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Translator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <style>
     :root {
-      --bg: #020617;
-      --bg-soft: #0b1120;
-      --card-bg: #020617;
-      --primary: #38bdf8;
-      --primary-soft: rgba(56, 189, 248, 0.12);
-      --primary-hover: #0ea5e9;
-      --border-subtle: rgba(148, 163, 184, 0.4);
-      --border-strong: rgba(148, 163, 184, 0.9);
+      --bg-main: #020617;
+      --bg-card: #020617;
+      --border: rgba(148, 163, 184, 0.15);
       --text-main: #e5e7eb;
-      --text-muted: #9ca3af;
-      --danger: #f97373;
-      --shadow-strong: 0 24px 80px rgba(15, 23, 42, 0.85);
-      --radius-xl: 22px;
-      --radius-lg: 14px;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
     }
 
-    *,
-    *::before,
-    *::after {
+    * {
       box-sizing: border-box;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
     body {
       margin: 0;
-      min-height: 100vh;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-        "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 60%),
-        radial-gradient(circle at bottom right, rgba(79, 70, 229, 0.28), transparent 55%),
-        var(--bg);
+      background: radial-gradient(1200px 600px at 10% 10%, #020617, #000);
       color: var(--text-main);
-      display: flex;
-      align-items: stretch;
-      justify-content: center;
-      padding: 24px 12px;
+      padding: 24px;
     }
 
-    .app-shell {
-      width: 100%;
-      max-width: 980px;
-      margin: auto;
-    }
-
-    .card {
-      background: radial-gradient(circle at top, rgba(56, 189, 248, 0.04), transparent 55%),
-        linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-strong);
-      border: 1px solid rgba(148, 163, 184, 0.18);
-      padding: 20px 18px 22px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    @media (min-width: 768px) {
-      .card {
-        padding: 26px 26px 26px;
-      }
-    }
-
-    .glow-orb {
-      position: absolute;
-      inset: -120px auto auto -120px;
-      width: 260px;
-      height: 260px;
-      background: radial-gradient(circle, rgba(56, 189, 248, 0.16), transparent 60%);
-      opacity: 0.7;
-      pointer-events: none;
-      z-index: -1;
-    }
-
-    .glow-orb.glow-orb--right {
-      inset: auto -120px -140px auto;
-      background: radial-gradient(circle, rgba(129, 140, 248, 0.18), transparent 60%);
-    }
-
-    .header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
-
-    .title-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #020617, #020617);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 0 0 1px var(--border), 0 30px 80px rgba(0,0,0,.7);
     }
 
     h1 {
-      margin: 0;
-      font-size: 1.6rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .title-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 3px 9px;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-    }
-
-    .title-pill-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: radial-gradient(circle, #22c55e, #16a34a);
-      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
-    }
-
-    .subtitle {
-      margin: 0;
-      font-size: 0.86rem;
-      color: var(--text-muted);
-    }
-
-    .badge-stack {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 6px;
-      font-size: 0.75rem;
-    }
-
-    .chip-soft {
-      border-radius: 999px;
-      padding: 4px 10px;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 65%);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text-muted);
-    }
-
-    .chip-soft strong {
-      color: var(--text-main);
-      font-weight: 600;
-    }
-
-    .chip-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: #38bdf8;
-    }
-
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1.3fr 1fr;
-      gap: 16px;
-      margin-top: 18px;
-    }
-
-    @media (max-width: 900px) {
-      .main-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .section {
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(148, 163, 184, 0.25);
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(15, 23, 42, 0.98));
-      padding: 14px 14px 16px;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .section-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text-main);
-    }
-
-    .section-caption {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 120px;
-      resize: vertical;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(148, 163, 184, 0.45);
-      font-size: 0.95rem;
-      font-family: inherit;
-      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.98));
-      color: var(--text-main);
-      outline: none;
-      transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
-    }
-
-    textarea::placeholder {
-      color: rgba(148, 163, 184, 0.7);
-    }
-
-    textarea:focus {
-      border-color: rgba(56, 189, 248, 0.9);
-      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
-      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.86), rgba(15, 23, 42, 0.98));
-    }
-
-    .row {
-      margin-bottom: 12px;
-    }
-
-    .label-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-
-    .label {
-      font-weight: 500;
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
+      margin-top: 0;
       letter-spacing: 0.08em;
     }
 
-    select {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      background: linear-gradient(135deg, #020617, #020617);
-      color: var(--text-main);
-      font-size: 0.9rem;
-      outline: none;
-      appearance: none;
-      background-image: linear-gradient(45deg, transparent 50%, var(--primary) 50%),
-        linear-gradient(135deg, var(--primary) 50%, transparent 50%);
-      background-position: calc(100% - 14px) calc(50% - 3px),
-        calc(100% - 9px) calc(50% - 3px);
-      background-size: 6px 6px, 6px 6px;
-      background-repeat: no-repeat;
-    }
-
-    select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.6);
-    }
-
-    .options-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 10px;
-      margin-top: 6px;
-    }
-
-    .gender-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 11px;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      background: rgba(15, 23, 42, 0.9);
-      font-size: 0.84rem;
-      color: var(--text-muted);
-      cursor: pointer;
-      user-select: none;
-      transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
-    }
-
-    .chip input {
-      appearance: none;
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      border: 2px solid rgba(148, 163, 184, 0.6);
-      position: relative;
-    }
-
-    .chip input:checked {
-      border-color: var(--primary);
-      background-color: var(--primary);
-    }
-
-    .chip input:checked + span,
-    .chip input:checked ~ span {
-      color: var(--text-main);
-    }
-
-    .controls-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
-      margin-top: 6px;
-    }
-
-    .btn {
-      border: none;
-      border-radius: 999px;
-      padding: 8px 18px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: background-color 0.15s ease, box-shadow 0.15s ease,
-        transform 0.05s ease, opacity 0.15s ease;
-      white-space: nowrap;
-    }
-
-    .btn-primary {
-      background: radial-gradient(circle at top left, #38bdf8, #0ea5e9);
-      color: #0b1120;
-      box-shadow: 0 16px 40px rgba(56, 189, 248, 0.5);
-    }
-
-    .btn-primary:hover {
-      background: radial-gradient(circle at top left, #38bdf8, #06b6d4);
-    }
-
-    .btn-primary:active {
-      transform: translateY(1px);
-      box-shadow: 0 6px 22px rgba(56, 189, 248, 0.55);
-    }
-
-    .btn-secondary {
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      color: var(--text-main);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(15, 23, 42, 0.98);
-    }
-
-    .btn-secondary:disabled {
-      opacity: 0.45;
-      cursor: default;
-      box-shadow: none;
-    }
-
-    .mini-btn {
-      border: none;
-      border-radius: 999px;
-      padding: 3px 10px;
-      font-size: 0.76rem;
-      cursor: pointer;
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-muted);
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease,
-        opacity 0.15s ease;
-    }
-
-    .mini-btn:hover:not(:disabled) {
-      background: var(--primary-soft);
-      border-color: var(--primary);
-      color: var(--text-main);
-    }
-
-    .mini-btn:disabled {
-      opacity: 0.45;
-      cursor: default;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      color: var(--text-muted);
-      font-size: 0.76rem;
-      font-weight: 500;
-    }
-
-    .pill-label {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-right: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .pill span:last-child {
-      color: var(--text-main);
-    }
-
-    .outputs {
-      margin-top: 12px;
-      border-top: 1px dashed rgba(148, 163, 184, 0.35);
-      padding-top: 14px;
+    .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 20px;
     }
 
-    @media (max-width: 768px) {
-      .outputs {
+    @media (max-width: 900px) {
+      .grid {
         grid-template-columns: 1fr;
       }
     }
 
-    .output-group {
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(148, 163, 184, 0.28);
-      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.98));
-      padding: 8px 10px 10px;
-    }
-
-    .output-box {
+    textarea, select {
+      width: 100%;
+      padding: 14px;
       border-radius: 10px;
-      border: 1px solid rgba(30, 64, 175, 0.7);
-      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98));
-      padding: 8px 10px;
-      min-height: 56px;
-      font-size: 0.94rem;
-      white-space: pre-wrap;
+      background: #020617;
+      border: 1px solid var(--border);
       color: var(--text-main);
+      font-size: 15px;
     }
 
-    .output-box.small {
-      font-size: 0.86rem;
-      border-color: rgba(30, 64, 175, 0.55);
+    textarea {
+      min-height: 120px;
+      resize: vertical;
     }
 
-    #error {
-      color: var(--danger);
-      font-size: 0.8rem;
-      margin-top: 6px;
+    /* FIXED DROPDOWN COLORS */
+    select {
+      background-color: #020617;
+      color: #e5e7eb;
     }
 
-    .footer-note {
-      margin-top: 10px;
-      font-size: 0.72rem;
+    select option {
+      background-color: #ffffff;
+      color: #020617;
+    }
+
+    .row {
+      margin-bottom: 16px;
+    }
+
+    .label {
+      font-size: 13px;
       color: var(--text-muted);
-      text-align: right;
+      margin-bottom: 6px;
+      display: block;
     }
 
-    .footer-note span {
-      opacity: 0.9;
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    button {
+      background: linear-gradient(180deg, #38bdf8, #0ea5e9);
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #020617;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    .output {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .output {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      background: #020617;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .copy {
+      float: right;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--accent);
+    }
+
+    .error {
+      color: #fb7185;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
     }
   </style>
 </head>
+
 <body>
-  <div class="app-shell">
-    <div class="card">
-      <div class="glow-orb"></div>
-      <div class="glow-orb glow-orb--right"></div>
+  <div class="container">
+    <h1>TRANSLATOR</h1>
 
-      <div class="header-row">
-        <div class="title-stack">
-          <div class="title-pill">
-            <span class="title-pill-dot"></span>
-            <span>Experimental language helper</span>
-          </div>
-          <h1>Translator</h1>
-          <p class="subtitle">
-            Type once, get a translation, phonetics, usage notes — and listen to it with built‑in speech.
-          </p>
-        </div>
-        <div class="badge-stack">
-          <div class="chip-soft">
-            <span class="chip-dot"></span>
-            <span>Powered by <strong>GPT‑4.1 / mini</strong></span>
-          </div>
-          <span class="section-caption">Optimised for Thai &amp; everyday conversation</span>
+    <div class="grid">
+      <div>
+        <div class="row">
+          <span class="label">Text to translate</span>
+          <textarea id="inputText"></textarea>
         </div>
       </div>
 
-      <div class="main-grid">
-        <div class="section">
-          <div class="section-header">
-            <div>
-              <div class="section-title">Input</div>
-              <div class="section-caption">What you want to say.</div>
-            </div>
-          </div>
-          <div class="row">
-            <textarea id="inputText" placeholder="Type or paste text here..."></textarea>
-          </div>
+      <div>
+        <div class="row">
+          <span class="label">Source language (or auto)</span>
+          <select id="sourceLang">
+            <option value="auto">Auto-detect</option>
+            <option>English</option>
+            <option>Thai</option>
+            <option>Malay</option>
+            <option>Japanese</option>
+            <option>Korean</option>
+            <option>Chinese</option>
+            <option>French</option>
+            <option>Spanish</option>
+            <option>German</option>
+            <option>Indonesian</option>
+            <option>Vietnamese</option>
+          </select>
         </div>
 
-        <div class="section">
-          <div class="section-header">
-            <div>
-              <div class="section-title">Languages &amp; tone</div>
-              <div class="section-caption">Choose direction and style.</div>
-            </div>
-          </div>
-
-          <div class="row options-grid">
-            <div>
-              <div class="label-row">
-                <span class="label">Source</span>
-              </div>
-              <select id="sourceLang">
-                <option value="auto">Auto-detect</option>
-                <option value="English">English</option>
-                <option value="Thai">Thai</option>
-                <option value="Malay">Malay</option>
-                <option value="Japanese">Japanese</option>
-                <option value="Korean">Korean</option>
-                <option value="Chinese">Chinese</option>
-                <option value="French">French</option>
-                <option value="Spanish">Spanish</option>
-                <option value="German">German</option>
-                <option value="Indonesian">Indonesian</option>
-                <option value="Vietnamese">Vietnamese</option>
-              </select>
-            </div>
-
-            <div>
-              <div class="label-row">
-                <span class="label">Target</span>
-              </div>
-              <select id="targetLang">
-                <option value="Thai">Thai</option>
-                <option value="English">English</option>
-                <option value="Malay">Malay</option>
-                <option value="Japanese">Japanese</option>
-                <option value="Korean">Korean</option>
-                <option value="Chinese">Chinese</option>
-                <option value="French">French</option>
-                <option value="Spanish">Spanish</option>
-                <option value="German">German</option>
-                <option value="Indonesian">Indonesian</option>
-                <option value="Vietnamese">Vietnamese</option>
-              </select>
-            </div>
-
-            <div>
-              <div class="label-row">
-                <span class="label">Speaker</span>
-              </div>
-              <div class="gender-row">
-                <label class="chip">
-                  <input type="radio" name="gender" value="male" checked />
-                  <span>Male</span>
-                </label>
-                <label class="chip">
-                  <input type="radio" name="gender" value="female" />
-                  <span>Female</span>
-                </label>
-              </div>
-            </div>
-          </div>
+        <div class="row">
+          <span class="label">Target language</span>
+          <select id="targetLang">
+            <option>Thai</option>
+            <option>English</option>
+            <option>Malay</option>
+            <option>Japanese</option>
+            <option>Korean</option>
+            <option>Chinese</option>
+            <option>French</option>
+            <option>Spanish</option>
+            <option>German</option>
+            <option>Indonesian</option>
+            <option>Vietnamese</option>
+          </select>
         </div>
-      </div>
-
-      <div class="section" style="margin-top: 16px;">
-        <div class="section-header">
-          <div>
-            <div class="section-title">Actions</div>
-            <div class="section-caption">Translate, listen, and learn from the sentence.</div>
-          </div>
-          <span class="pill" id="sourceLangPill" style="display:none;">
-            <span class="pill-label">Detected</span>
-            <span id="sourceLangValue"></span>
-          </span>
-        </div>
-
-        <div class="controls-row">
-          <button id="translateBtn" class="btn btn-primary">Translate</button>
-          <button id="speakBtn" class="btn btn-secondary" disabled>Play translation</button>
-          <button id="explainBtn" class="btn btn-secondary" disabled>Explain this</button>
-        </div>
-        <div id="error"></div>
-      </div>
-
-      <div class="outputs">
-        <div class="output-group">
-          <div class="label-row">
-            <span class="label">Translation</span>
-            <button id="copyTranslationBtn" class="mini-btn" disabled>Copy</button>
-          </div>
-          <div id="translation" class="output-box"></div>
-        </div>
-
-        <div class="output-group">
-          <div class="label-row">
-            <span class="label">Phonetic</span>
-            <button id="copyPhoneticBtn" class="mini-btn" disabled>Copy</button>
-          </div>
-          <div id="phonetic" class="output-box small"></div>
-        </div>
-
-        <div class="output-group">
-          <div class="label-row">
-            <span class="label">Notes</span>
-            <button id="copyNotesBtn" class="mini-btn" disabled>Copy</button>
-          </div>
-          <div id="notes" class="output-box small"></div>
-        </div>
-
-        <div class="output-group">
-          <div class="label-row">
-            <span class="label">Explanation</span>
-            <button id="copyExplanationBtn" class="mini-btn" disabled>Copy</button>
-          </div>
-          <div id="explanation" class="output-box small"></div>
-        </div>
-      </div>
-
-      <div class="footer-note">
-        <span>Browser audio uses local text‑to‑speech. Quality depends on your device &amp; language support.</span>
       </div>
     </div>
+
+    <div class="actions">
+      <button onclick="translate()">Translate</button>
+      <button class="secondary" onclick="explain()">Explain this</button>
+    </div>
+
+    <div id="error" class="error"></div>
+
+    <div class="output">
+      <div class="card">
+        <h3>TRANSLATION <span class="copy" onclick="copy('translation')">Copy</span></h3>
+        <div id="translation"></div>
+      </div>
+
+      <div class="card">
+        <h3>PHONETIC <span class="copy" onclick="copy('phonetic')">Copy</span></h3>
+        <div id="phonetic"></div>
+      </div>
+
+      <div class="card">
+        <h3>NOTES <span class="copy" onclick="copy('notes')">Copy</span></h3>
+        <div id="notes"></div>
+      </div>
+
+      <div class="card">
+        <h3>EXPLANATION</h3>
+        <div id="explanation"></div>
+      </div>
+    </div>
+
+    <footer>
+      Browser audio uses local text-to-speech. Quality depends on device support.
+    </footer>
   </div>
 
-  <script>
-    const backendUrl = '/.netlify/functions/translate';
-
-    const inputTextEl = document.getElementById('inputText');
-    const sourceLangEl = document.getElementById('sourceLang');
-    const targetLangEl = document.getElementById('targetLang');
-
-    const translateBtn = document.getElementById('translateBtn');
-    const speakBtn = document.getElementById('speakBtn');
-    const explainBtn = document.getElementById('explainBtn');
-
-    const translationEl = document.getElementById('translation');
-    const phoneticEl = document.getElementById('phonetic');
-    const notesEl = document.getElementById('notes');
-    const explanationEl = document.getElementById('explanation');
-
-    const errorEl = document.getElementById('error');
-    const sourceLangPill = document.getElementById('sourceLangPill');
-    const sourceLangValue = document.getElementById('sourceLangValue');
-
-    const genderInputs = document.querySelectorAll('input[name="gender"]');
-
-    const thaiOptionsRow = document.createElement('div'); // placeholder to keep script simple
-    const chineseOptionsRow = document.createElement('div');
-    const japaneseOptionsRow = document.createElement('div');
-    const koreanOptionsRow = document.createElement('div');
-
-    const thaiFormalityEl = document.createElement('select');
-    const chineseScriptEl = document.createElement('select');
-    const japanesePolitenessEl = document.createElement('select');
-    const koreanFormalityEl = document.createElement('select');
-
-    const copyTranslationBtn = document.getElementById('copyTranslationBtn');
-    const copyPhoneticBtn = document.getElementById('copyPhoneticBtn');
-    const copyNotesBtn = document.getElementById('copyNotesBtn');
-    const copyExplanationBtn = document.getElementById('copyExplanationBtn');
-
-    let lastTranslationText = '';
-    let lastTargetLangCode = '';
-    let baseThaiTranslation = '';
-    let baseThaiPhonetic = '';
-
-    const langCodeMap = {
-      Thai: 'th-TH',
-      English: 'en-US',
-      Malay: 'ms-MY',
-      Japanese: 'ja-JP',
-      Korean: 'ko-KR',
-      Chinese: 'zh-CN',
-      French: 'fr-FR',
-      Spanish: 'es-ES',
-      German: 'de-DE',
-      Indonesian: 'id-ID',
-      Vietnamese: 'vi-VN',
-    };
-
-    function getLangCode(label) {
-      return langCodeMap[label] || 'en-US';
-    }
-
-    function getGender() {
-      for (const g of genderInputs) {
-        if (g.checked) return g.value;
-      }
-      return 'male';
-    }
-
-    function updateOptionVisibility() {}
-
-    function speak(text, langCode) {
-      if (!('speechSynthesis' in window)) {
-        alert('Text-to-Speech is not supported in this browser.');
-        return;
-      }
-      if (!text.trim()) return;
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = langCode;
-      window.speechSynthesis.speak(utterance);
-    }
-
-    function applyThaiPoliteness() {
-      if (targetLangEl.value !== 'Thai' || !baseThaiTranslation) return;
-      const gender = getGender();
-      const particleText = gender === 'female' ? 'ค่ะ' : 'ครับ';
-      translationEl.textContent = (baseThaiTranslation || '').trim() + ' ' + particleText;
-      lastTranslationText = translationEl.textContent;
-
-      // Keep phonetics in sync (use romanization of the Thai particle).
-      if (baseThaiPhonetic) {
-        const particlePhon = gender === 'female' ? 'kha' : 'khrab';
-        const cleaned = (baseThaiPhonetic || '').replace(/\s*(khrab|khrap|kha)\s*$/i, '').trim();
-        phoneticEl.textContent = (cleaned ? cleaned + ' ' : '') + particlePhon;
-      } else {
-        phoneticEl.textContent = '';
-      }
-    }
-
-    function getOptionsPayload() {
-      return {
-        gender: getGender(),
-      };
-    }
-
-    function setCopyButtonsState() {
-      copyTranslationBtn.disabled = !translationEl.textContent.trim();
-      copyPhoneticBtn.disabled = !phoneticEl.textContent.trim();
-      copyNotesBtn.disabled = !notesEl.textContent.trim();
-      copyExplanationBtn.disabled = !explanationEl.textContent.trim();
-    }
-
-    async function copyFromElement(el, btn) {
-      const text = el.textContent.trim();
-      if (!text) return;
-      try {
-        await navigator.clipboard.writeText(text);
-        const original = btn.textContent;
-        btn.textContent = 'Copied';
-        setTimeout(() => { btn.textContent = original; }, 1000);
-      } catch (e) {
-        console.error(e);
-        alert('Unable to copy');
-      }
-    }
-
-    genderInputs.forEach((input) => {
-      input.addEventListener('change', () => {
-        applyThaiPoliteness();
-      });
+<script>
+async function translate() {
+  document.getElementById('error').textContent = '';
+  try {
+    const res = await fetch('/.netlify/functions/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: document.getElementById('inputText').value,
+        sourceLang: document.getElementById('sourceLang').value,
+        targetLang: document.getElementById('targetLang').value
+      })
     });
+    const data = await res.json();
+    document.getElementById('translation').textContent = data.translation || '';
+    document.getElementById('phonetic').textContent = data.phonetic || '';
+    document.getElementById('notes').textContent = data.notes || '';
+  } catch (e) {
+    document.getElementById('error').textContent = e.message;
+  }
+}
 
-    function resetOutputs() {
-      translationEl.textContent = '';
-      phoneticEl.textContent = '';
-      notesEl.textContent = '';
-      explanationEl.textContent = '';
-      sourceLangPill.style.display = 'none';
-      sourceLangValue.textContent = '';
-      speakBtn.disabled = true;
-      explainBtn.disabled = true;
-      lastTranslationText = '';
-      lastTargetLangCode = '';
-      baseThaiTranslation = '';
-      baseThaiPhonetic = '';
-      setCopyButtonsState();
-    }
-
-    targetLangEl.addEventListener('change', () => {
-      resetOutputs();
+async function explain() {
+  try {
+    const res = await fetch('/.netlify/functions/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'explain',
+        text: document.getElementById('inputText').value,
+        translation: document.getElementById('translation').textContent
+      })
     });
+    const data = await res.json();
+    document.getElementById('explanation').textContent = data.explanation || '';
+  } catch (e) {
+    document.getElementById('error').textContent = e.message;
+  }
+}
 
-    sourceLangEl.addEventListener('change', () => {
-      resetOutputs();
-    });
+function copy(id) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent);
+}
+</script>
 
-    translateBtn.addEventListener('click', async () => {
-      const text = inputTextEl.value.trim();
-      const sourceLang = sourceLangEl.value;
-      const targetLang = targetLangEl.value;
-
-      errorEl.textContent = '';
-      resetOutputs();
-
-      if (!text) {
-        errorEl.textContent = 'Please enter some text.';
-        return;
-      }
-
-      translateBtn.disabled = true;
-      translateBtn.textContent = 'Translating...';
-
-      try {
-        const res = await fetch(backendUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'translate',
-            text,
-            sourceLang,
-            targetLang,
-            options: getOptionsPayload(),
-          }),
-        });
-
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || 'Request failed');
-        }
-
-        let baseTranslation = data.translation || data.raw || '';
-        let basePhon = data.phonetic || '';
-
-        if (data.source_lang) {
-          sourceLangValue.textContent = data.source_lang;
-          sourceLangPill.style.display = 'inline-flex';
-        }
-
-        if (targetLang === 'Thai' && baseTranslation) {
-          // Ensure UI controls the polite particle (male/female).
-          baseThaiTranslation = baseTranslation.replace(/\s*(ครับ|ค่ะ)\s*$/u, '').trim();
-          baseThaiPhonetic = (basePhon || '').replace(/\s*(khrab|khrap|kha)\s*$/i, '').trim();
-          applyThaiPoliteness();
-        } else {
-          translationEl.textContent = baseTranslation;
-          phoneticEl.textContent = basePhon;
-          lastTranslationText = baseTranslation;
-        }
-
-        notesEl.textContent = data.notes || '';
-        lastTargetLangCode = getLangCode(targetLang);
-        speakBtn.disabled = !lastTranslationText.trim();
-        explainBtn.disabled = !lastTranslationText.trim();
-      } catch (err) {
-        console.error(err);
-        errorEl.textContent = 'Error: ' + err.message;
-      } finally {
-        translateBtn.disabled = false;
-        translateBtn.textContent = 'Translate';
-        setCopyButtonsState();
-      }
-    });
-
-    explainBtn.addEventListener('click', async () => {
-      const text = inputTextEl.value.trim();
-      const sourceLang = sourceLangEl.value;
-      const targetLang = targetLangEl.value;
-      const translationText = translationEl.textContent.trim();
-      if (!translationText) return;
-
-      errorEl.textContent = '';
-      explanationEl.textContent = '';
-      setCopyButtonsState();
-
-      explainBtn.disabled = true;
-      const originalLabel = explainBtn.textContent;
-      explainBtn.textContent = 'Explaining...';
-
-      try {
-        const res = await fetch(backendUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'explain',
-            text,
-            sourceLang,
-            targetLang,
-            translation: translationText,
-            options: getOptionsPayload(),
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || 'Request failed');
-        }
-        explanationEl.textContent = data.explanation || data.raw || '';
-      } catch (err) {
-        console.error(err);
-        errorEl.textContent = 'Error: ' + err.message;
-      } finally {
-        explainBtn.disabled = false;
-        explainBtn.textContent = originalLabel;
-        setCopyButtonsState();
-      }
-    });
-
-    speakBtn.addEventListener('click', () => {
-      if (lastTranslationText) {
-        speak(lastTranslationText, lastTargetLangCode || getLangCode(targetLangEl.value));
-      }
-    });
-
-    copyTranslationBtn.addEventListener('click', () => copyFromElement(translationEl, copyTranslationBtn));
-    copyPhoneticBtn.addEventListener('click', () => copyFromElement(phoneticEl, copyPhoneticBtn));
-    copyNotesBtn.addEventListener('click', () => copyFromElement(notesEl, copyNotesBtn));
-    copyExplanationBtn.addEventListener('click', () => copyFromElement(explanationEl, copyExplanationBtn));
-
-    setCopyButtonsState();
-  </script>
 </body>
 </html>
