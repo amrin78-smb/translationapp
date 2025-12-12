@@ -63,7 +63,7 @@ exports.handler = async (event) => {
       ((srcLang === 'Malay' || srcLang === 'Indonesian') && targetLang === 'Thai') ||
       ((targetLang === 'Malay' || targetLang === 'Indonesian') && srcLang === 'Thai');
 
-    const modelForTranslate = (lowResourcePair && wordCount <= 2) ? 'gpt-4.1' : 'gpt-4.1-mini';
+    const modelForTranslate = 'gpt-4o';
 
     if (action === 'explain') {
       const explanationPrompt = `
@@ -74,6 +74,7 @@ ${JSON.stringify({ text, sourceLang: srcLang, targetLang, translation, options: 
 
 Requirements:
 - Explain the translation in clear English.
+- Output plain text only (no markdown, no bullets with **, no headings).
 - Break down important words or phrases and what they mean.
 - Mention tone and politeness (casual vs formal).
 - If relevant, comment on particles like "ครับ/ค่ะ" in Thai or formality differences like "tu/vous" in French or "usted/tú" in Spanish.
