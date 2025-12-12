@@ -15,57 +15,42 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return { statusCode: 500, body: JSON.stringify({ error: 'OPENAI_API_KEY not set' }) };
+  }
+
+  const payload = JSON.parse(event.body || '{}');
+  const { action, text, sourceLang, targetLang, translation } = payload;
+
+  const callOpenAI = async (systemPrompt) => {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: text || '' }
+        ],
+        temperature: 0.2,
+      }),
+    });
+    return res.json();
+  };
+
   try {
-    const { action, text, sourceLang, targetLang, options, translation } =
-      JSON.parse(event.body || '{}');
-
-    if (!text || !targetLang) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Missing text or targetLang' }) };
-    }
-
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return { statusCode: 500, body: JSON.stringify({ error: 'OPENAI_API_KEY not set' }) };
-    }
-
-    const srcLang = sourceLang || 'auto';
-    const opts = options || {};
-
-    const wordCount = text.trim().split(/\s+/).length;
-
-    const lowResourcePair =
-      ((srcLang === 'Malay' || srcLang === 'Indonesian') && targetLang === 'Thai') ||
-      ((targetLang === 'Malay' || targetLang === 'Indonesian') && srcLang === 'Thai');
-
-    const modelForTranslate =
-      (lowResourcePair && wordCount <= 2)
-        ? 'gpt-4o'
-        : 'gpt-4.1-mini';
-
     if (action === 'explain') {
-      const prompt = `You are a language teacher.
+      const explainPrompt = `You are a language teacher.
 Explain the following translation clearly in English.
-Source: ${text}
-Target: ${translation}
-Tone, structure, and alternatives should be explained.`;
+Source sentence: ${text}
+Translated sentence: ${translation}
+Explain structure, meaning, and alternatives.`;
 
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4.1-mini',
-          messages: [
-            { role: 'system', content: prompt },
-            { role: 'user', content: 'Explain.' }
-          ],
-          temperature: 0.3,
-        }),
-      });
-
-      const data = await res.json();
+      const data = await callOpenAI(explainPrompt);
       return {
         statusCode: 200,
         headers: { 'Access-Control-Allow-Origin': '*' },
@@ -75,17 +60,18 @@ Tone, structure, and alternatives should be explained.`;
       };
     }
 
-    const systemPrompt = `You are a professional translator.
+    const basePrompt = `You are a professional human translator.
 
 Rules:
-- Translate from ${srcLang} to ${targetLang}.
-- If input is 1–2 words, behave like a bilingual dictionary.
-- Prefer real target-language words over transliteration.
-- Thai output must NOT include ครับ or ค่ะ.
-- Always provide phonetics for non-Latin scripts.
-- Notes must be in English only.
+- Translate from ${sourceLang || 'auto'} to ${targetLang}.
+- If input is 1–2 words, behave like a dictionary, not a transliterator.
+- Prefer real target-language words over phonetic borrowing.
+- Thai output must NEVER include ครับ or ค่ะ.
+- Always include phonetics for non-Latin scripts.
+- Notes MUST be in English.
+- Output MUST be valid JSON only.
 
-Respond ONLY in JSON:
+Required JSON format:
 {
   "source_lang": "...",
   "target_lang": "...",
@@ -94,33 +80,29 @@ Respond ONLY in JSON:
   "notes": "..."
 }`;
 
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: modelForTranslate,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: text },
-        ],
-        temperature: 0.2,
-      }),
-    });
+    let data = await callOpenAI(basePrompt);
+    let raw = data.choices?.[0]?.message?.content || '';
 
-    const data = await res.json();
-    const content = data.choices?.[0]?.message?.content || '';
+    try {
+      JSON.parse(raw);
+    } catch {
+      // Retry once with stricter instruction
+      const retryPrompt = basePrompt + "\n\nIMPORTANT: Output ONLY raw JSON. No text before or after.";
+      data = await callOpenAI(retryPrompt);
+      raw = data.choices?.[0]?.message?.content || '';
+      JSON.parse(raw); // throws if still invalid
+    }
 
     return {
       statusCode: 200,
       headers: { 'Access-Control-Allow-Origin': '*' },
-      body: content,
+      body: raw,
     };
+
   } catch (err) {
     return {
       statusCode: 500,
+      headers: { 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ error: err.message }),
     };
   }
