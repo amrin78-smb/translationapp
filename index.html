@@ -728,8 +728,17 @@
       if (targetLangEl.value !== 'Thai' || !baseThaiTranslation) return;
       const gender = getGender();
       const particleText = gender === 'female' ? 'ค่ะ' : 'ครับ';
-      translationEl.textContent = baseThaiTranslation + ' ' + particleText;
+      translationEl.textContent = (baseThaiTranslation || '').trim() + ' ' + particleText;
       lastTranslationText = translationEl.textContent;
+
+      // Keep phonetics in sync (use romanization of the Thai particle).
+      if (baseThaiPhonetic) {
+        const particlePhon = gender === 'female' ? 'kha' : 'khrab';
+        const cleaned = (baseThaiPhonetic || '').replace(/\s*(khrab|khrap|kha)\s*$/i, '').trim();
+        phoneticEl.textContent = (cleaned ? cleaned + ' ' : '') + particlePhon;
+      } else {
+        phoneticEl.textContent = '';
+      }
     }
 
     function getOptionsPayload() {
@@ -832,8 +841,9 @@
         }
 
         if (targetLang === 'Thai' && baseTranslation) {
-          baseThaiTranslation = baseTranslation;
-          baseThaiPhonetic = basePhon;
+          // Ensure UI controls the polite particle (male/female).
+          baseThaiTranslation = baseTranslation.replace(/\s*(ครับ|ค่ะ)\s*$/u, '').trim();
+          baseThaiPhonetic = (basePhon || '').replace(/\s*(khrab|khrap|kha)\s*$/i, '').trim();
           applyThaiPoliteness();
         } else {
           translationEl.textContent = baseTranslation;
