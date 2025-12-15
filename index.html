@@ -2,434 +2,441 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Translator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root{
-      --bg0:#020617;
-      --bg1:#0b1220;
-      --card:#0b1220;
-      --card2:#0f172a;
-      --border:rgba(148,163,184,.18);
-      --border2:rgba(148,163,184,.26);
-      --text:#e5e7eb;
-      --muted:#94a3b8;
-      --muted2:#64748b;
-      --accent:#38bdf8;
-      --accent2:#0ea5e9;
-      --danger:#fb7185;
-      --shadow: 0 30px 80px rgba(0,0,0,.65);
-      --radius:18px;
-      --radius-sm:12px;
-    }
+:root{
+  --bg:#0b1220;
+  --card:#0f172a;
+  --border:rgba(148,163,184,.22);
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+  --accent:#38bdf8;
+  --accent2:#0ea5e9;
+  --danger:#fb7185;
+  --radius:16px;
+}
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      padding:24px 14px;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(900px 520px at 10% 10%, rgba(56,189,248,.16), transparent 60%),
-        radial-gradient(900px 520px at 90% 20%, rgba(14,165,233,.12), transparent 62%),
-        radial-gradient(1200px 700px at 40% 110%, rgba(99,102,241,.10), transparent 65%),
-        linear-gradient(180deg, var(--bg0), #000);
-    }
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: radial-gradient(900px 520px at 10% 10%, rgba(56,189,248,.12), transparent 60%),
+              radial-gradient(900px 520px at 90% 20%, rgba(14,165,233,.10), transparent 62%),
+              linear-gradient(180deg, #020617, #000);
+  color:var(--text);
+  padding:14px;
+}
+.shell{
+  max-width:900px;
+  margin:0 auto;
+}
 
-    .app-shell{
-      max-width:1100px;
-      margin:0 auto;
-      border-radius:var(--radius);
-      background: linear-gradient(180deg, rgba(15,23,42,.72), rgba(2,6,23,.88));
-      box-shadow: var(--shadow);
-      border:1px solid var(--border);
-      overflow:hidden;
-      backdrop-filter: blur(10px);
-    }
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 6px 14px 6px;
+}
+.title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.title .dot{
+  width:10px;height:10px;border-radius:50%;
+  background:#22c55e;
+  box-shadow:0 0 0 4px rgba(34,197,94,.12);
+}
+.small-muted{color:var(--muted); font-size:12px}
 
-    .card{
-      padding:24px;
-    }
+.card{
+  background: rgba(15,23,42,.55);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  box-shadow: 0 18px 50px rgba(0,0,0,.55);
+  backdrop-filter: blur(10px);
+}
 
-    @media (max-width: 640px){
-      .card{ padding:18px; }
-      body{ padding:16px 10px; }
-    }
+.langbar{
+  display:grid;
+  grid-template-columns: 1fr 44px 1fr;
+  gap:10px;
+  padding:12px;
+  border-bottom:1px solid rgba(148,163,184,.16);
+  align-items:center;
+}
+select{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(2,6,23,.45);
+  color:var(--text);
+  outline:none;
+}
+select:focus{
+  border-color: rgba(56,189,248,.55);
+  box-shadow: 0 0 0 4px rgba(56,189,248,.12);
+}
+/* dropdown list readability */
+select option{ background:#fff; color:#0b1220; }
 
-    .pill{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 14px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background: rgba(2,6,23,.55);
-      color:var(--muted);
-      width:fit-content;
-      box-shadow: 0 0 0 1px rgba(0,0,0,.18) inset;
-    }
-    .pill .dot{
-      width:10px;height:10px;border-radius:50%;
-      background: #22c55e;
-      box-shadow: 0 0 0 4px rgba(34,197,94,.12);
-    }
-    .pill-label{ letter-spacing:.12em; font-size:12px; text-transform:uppercase; }
+.swap{
+  width:44px;height:44px;
+  border-radius:12px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(2,6,23,.35);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+}
+.swap:hover{ border-color: rgba(148,163,184,.35); }
 
-    h1{
-      margin:14px 0 6px 0;
-      font-size:34px;
-      letter-spacing:.12em;
-      line-height:1.1;
-    }
+.panes{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:0;
+}
+@media (max-width: 820px){
+  .panes{ grid-template-columns: 1fr; }
+}
 
-    .subtitle{
-      margin:0 0 18px 0;
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.55;
-    }
+.pane{
+  padding:12px;
+}
+.pane + .pane{
+  border-left:1px solid rgba(148,163,184,.16);
+}
+@media (max-width: 820px){
+  .pane + .pane{ border-left:none; border-top:1px solid rgba(148,163,184,.16); }
+}
 
-    /* Layout */
-    .controls-row{
-      display:grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap:18px;
-      margin-top:18px;
-    }
-    @media (max-width: 900px){
-      .controls-row{ grid-template-columns:1fr; }
-    }
+textarea{
+  width:100%;
+  min-height:140px;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(2,6,23,.35);
+  color:var(--text);
+  resize:vertical;
+  outline:none;
+  line-height:1.55;
+}
+textarea:focus{
+  border-color: rgba(56,189,248,.55);
+  box-shadow: 0 0 0 4px rgba(56,189,248,.12);
+}
 
-    .row{ margin-bottom:16px; }
-    .label-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:8px;
-    }
-    .label{
-      font-size:12px;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-      color:var(--muted);
-    }
+.pane-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+.pane-head .label{
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:.10em;
+  text-transform:uppercase;
+}
 
-    textarea, select{
-      width:100%;
-      padding:14px 14px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background: rgba(2,6,23,.55);
-      color:var(--text);
-      font-size:15px;
-      outline:none;
-      box-shadow: 0 0 0 1px rgba(0,0,0,.10) inset;
-    }
-    textarea{
-      min-height:138px;
-      resize:vertical;
-      line-height:1.5;
-    }
-    textarea:focus, select:focus{
-      border-color: rgba(56,189,248,.55);
-      box-shadow: 0 0 0 4px rgba(56,189,248,.14);
-    }
+.iconbar{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.iconbtn{
+  width:40px;height:40px;
+  border-radius:12px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(2,6,23,.30);
+  color:var(--text);
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.iconbtn:hover{ border-color: rgba(148,163,184,.35); }
 
-    /* Dropdown readability fix */
-    select{ color: var(--text); background-color: rgba(2,6,23,.55); }
-    select option{ background-color: #ffffff; color:#0b1220; }
+.copy-pill{
+  border-radius:999px;
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:700;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(2,6,23,.25);
+  color:var(--text);
+  cursor:pointer;
+}
+.copy-pill:hover{ border-color: rgba(148,163,184,.35); }
 
-    .options-grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap:14px;
-    }
-    @media (max-width: 900px){
-      .options-grid{ grid-template-columns:1fr; }
-    }
+.outbox{
+  min-height:140px;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid rgba(148,163,184,.18);
+  background: rgba(2,6,23,.25);
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  line-height:1.55;
+}
 
-    .gender-row{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .chip{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 12px;
-      border:1px solid var(--border);
-      border-radius:14px;
-      background: rgba(15,23,42,.35);
-    }
-    .chip label{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      color:var(--text);
-      font-size:14px;
-      cursor:pointer;
-      user-select:none;
-    }
-    input[type="radio"]{ accent-color: var(--accent); }
+.meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  padding:12px;
+  border-top:1px solid rgba(148,163,184,.16);
+  align-items:center;
+  justify-content:space-between;
+}
 
-    .actions{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      padding:16px 0 8px 0;
-      border-top:1px dashed rgba(148,163,184,.18);
-      margin-top:6px;
-    }
+.meta-left{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
 
-    .btn{
-      border:1px solid transparent;
-      border-radius:999px;
-      padding:10px 16px;
-      font-weight:700;
-      font-size:14px;
-      cursor:pointer;
-      transition: transform .06s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease, opacity .2s ease;
-      user-select:none;
-    }
-    .btn:active{ transform: translateY(1px); }
+.segment{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  padding:8px 10px;
+  border:1px solid rgba(148,163,184,.18);
+  border-radius:999px;
+  background: rgba(2,6,23,.25);
+}
 
-    .btn-primary{
-      background: linear-gradient(180deg, var(--accent), var(--accent2));
-      color:#04101b;
-      box-shadow: 0 10px 30px rgba(14,165,233,.18);
-    }
-    .btn-primary:hover{ box-shadow: 0 12px 36px rgba(14,165,233,.24); }
+.segment label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+  user-select:none;
+  font-size:13px;
+}
+input[type="radio"]{ accent-color: var(--accent); }
 
-    .btn-secondary{
-      background: rgba(2,6,23,.35);
-      color: var(--text);
-      border-color: var(--border);
-    }
-    .btn-secondary:hover{ border-color: var(--border2); }
+.hidden-rows{ display:none; } /* option rows will be toggled by JS */
 
-    .btn[disabled], .mini-btn[disabled]{
-      opacity:.45;
-      cursor:not-allowed;
-      transform:none;
-    }
+.error{
+  padding:10px 12px;
+  color:var(--danger);
+  font-size:13px;
+}
+.footer-note{
+  padding:12px 6px 0 6px;
+  color:var(--muted);
+  font-size:12px;
+  text-align:center;
+}
 
-    .mini-btn{
-      border-radius:999px;
-      border:1px solid var(--border);
-      background: rgba(2,6,23,.35);
-      color: var(--accent);
-      padding:6px 10px;
-      font-size:12px;
-      font-weight:700;
-      cursor:pointer;
-    }
-    .mini-btn:hover{ border-color: var(--border2); }
-
-    .outputs{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:16px;
-      padding-top:16px;
-      border-top:1px solid rgba(148,163,184,.14);
-      margin-top:8px;
-    }
-    @media (max-width: 900px){
-      .outputs{ grid-template-columns:1fr; }
-    }
-
-    .output-box{
-      min-height:84px;
-      padding:14px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background: rgba(2,6,23,.45);
-      color:var(--text);
-      line-height:1.55;
-      white-space:pre-wrap;
-      overflow-wrap:anywhere;
-    }
-    .output-box.small{ min-height:64px; }
-
-    .error{
-      margin-top:10px;
-      color: var(--danger);
-      font-size:13px;
-    }
-
-    footer{
-      padding:16px 24px 22px 24px;
-      color: var(--muted2);
-      font-size:12px;
-      border-top:1px solid rgba(148,163,184,.12);
-      text-align:center;
-    }
-
-  </style>
+/* simple inline svg icons */
+svg{ display:block; }
+</style>
 </head>
 <body>
-  <div class="app-shell">
+  <div class="shell">
+    <div class="header">
+      <div>
+        <div class="title"><span class="dot"></span><span>TRANSLATOR</span></div>
+        <div class="small-muted">Simple, fast translations with phonetics and notes.</div>
+      </div>
+      <div class="small-muted" id="sourceLangPill" style="display:none;">
+        Detected: <span id="sourceLangValue"></span>
+      </div>
+    </div>
+
     <div class="card">
-      <h1>Translator</h1>
-      <p class="subtitle">Type once, get translation, phonetic, notes — and listen to it.</p>
+      <div class="langbar">
+        <select id="sourceLang" aria-label="Source language">
+          <option value="auto">Auto-detect</option>
+          <option>English</option>
+          <option>Thai</option>
+          <option>Malay</option>
+          <option>Japanese</option>
+          <option>Korean</option>
+          <option>Chinese</option>
+          <option>French</option>
+          <option>Spanish</option>
+          <option>German</option>
+          <option>Indonesian</option>
+          <option>Vietnamese</option>
+        </select>
 
-      <div class="row">
-        <div class="label-row">
-          <span class="label">Text to translate</span>
+        <div class="swap" id="swapBtn" title="Swap languages">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 7h13l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20 7l-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M17 17H4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 17l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
-        <textarea id="inputText" placeholder="Type or paste text here..."></textarea>
+
+        <select id="targetLang" aria-label="Target language">
+          <option>Thai</option>
+          <option>English</option>
+          <option>Malay</option>
+          <option>Japanese</option>
+          <option>Korean</option>
+          <option>Chinese</option>
+          <option>French</option>
+          <option>Spanish</option>
+          <option>German</option>
+          <option>Indonesian</option>
+          <option>Vietnamese</option>
+        </select>
       </div>
 
-      <div class="row options-grid">
-        <div>
-          <div class="label-row">
-            <span class="label">Source language</span>
+      <div class="panes">
+        <div class="pane">
+          <div class="pane-head">
+            <div class="label">Input</div>
+            <div class="iconbar">
+              <button class="iconbtn" id="translateBtn" title="Translate">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 5h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M4 12h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M4 19h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M14 8h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M17 5v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M14 19l6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M20 19v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+
+              <button class="iconbtn" id="speakBtn" title="Play translation" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M11 5l-6 5v4l6 5V5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                  <path d="M16 9a3 3 0 010 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M19 6a7 7 0 010 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+
+              <button class="iconbtn" id="explainBtn" title="Explain" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 18h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                  <path d="M9 9a3 3 0 016 0c0 2-3 2-3 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
+            </div>
           </div>
-          <select id="sourceLang">
-            <option value="auto">Auto-detect</option>
-            <option value="English">English</option>
-            <option value="Thai">Thai</option>
-            <option value="Malay">Malay</option>
-            <option value="Japanese">Japanese</option>
-            <option value="Korean">Korean</option>
-            <option value="Chinese">Chinese</option>
-            <option value="French">French</option>
-            <option value="Spanish">Spanish</option>
-            <option value="German">German</option>
-            <option value="Indonesian">Indonesian</option>
-            <option value="Vietnamese">Vietnamese</option>
-          </select>
+
+          <textarea id="inputText" placeholder="Type or paste text…"></textarea>
+
+          <div id="error" class="error"></div>
         </div>
 
-        <div>
-          <div class="label-row">
-            <span class="label">Target language</span>
+        <div class="pane">
+          <div class="pane-head">
+            <div class="label">Output</div>
+            <div class="iconbar">
+              <button class="copy-pill" id="copyTranslationBtn" title="Copy translation" disabled>Copy</button>
+            </div>
           </div>
-          <select id="targetLang">
-            <option value="Thai">Thai</option>
-            <option value="English">English</option>
-            <option value="Malay">Malay</option>
-            <option value="Japanese">Japanese</option>
-            <option value="Korean">Korean</option>
-            <option value="Chinese">Chinese</option>
-            <option value="French">French</option>
-            <option value="Spanish">Spanish</option>
-            <option value="German">German</option>
-            <option value="Indonesian">Indonesian</option>
-            <option value="Vietnamese">Vietnamese</option>
-          </select>
-        </div>
 
-        <div>
-          <div class="label-row">
-            <span class="label">Speaker</span>
-          </div>
-          <div class="gender-row">
-            <label class="chip">
-              <input type="radio" name="gender" value="male" checked />
-              <span>Male</span>
-            </label>
-            <label class="chip">
-              <input type="radio" name="gender" value="female" />
-              <span>Female</span>
-            </label>
-          </div>
-        </div>
-      </div>
+          <div id="translation" class="outbox"></div>
 
-      <div class="row options-grid">
-        <div id="thaiOptionsRow" style="display:none;">
-          <div class="label-row">
-            <span class="label">Thai tone</span>
+          <div class="pane-head" style="margin-top:12px;">
+            <div class="label">Phonetic</div>
+            <div class="iconbar">
+              <button class="copy-pill" id="copyPhoneticBtn" title="Copy phonetic" disabled>Copy</button>
+            </div>
           </div>
-          <select id="thaiFormality">
-            <option value="casual">Casual friendly</option>
-            <option value="polite">More polite</option>
-          </select>
-        </div>
+          <div id="phonetic" class="outbox"></div>
 
-        <div id="chineseOptionsRow" style="display:none;">
-          <div class="label-row">
-            <span class="label">Chinese script</span>
+          <div class="pane-head" style="margin-top:12px;">
+            <div class="label">Notes</div>
+            <div class="iconbar">
+              <button class="copy-pill" id="copyNotesBtn" title="Copy notes" disabled>Copy</button>
+            </div>
           </div>
-          <select id="chineseScript">
-            <option value="simplified">Simplified</option>
-            <option value="traditional">Traditional</option>
-          </select>
-        </div>
+          <div id="notes" class="outbox"></div>
 
-        <div id="japaneseOptionsRow" style="display:none;">
-          <div class="label-row">
-            <span class="label">Japanese style</span>
+          <div class="pane-head" style="margin-top:12px;">
+            <div class="label">Explanation</div>
+            <div class="iconbar">
+              <button class="copy-pill" id="copyExplanationBtn" title="Copy explanation" disabled>Copy</button>
+            </div>
           </div>
-          <select id="japanesePoliteness">
-            <option value="polite">Polite</option>
-            <option value="casual">Casual</option>
-          </select>
-        </div>
-
-        <div id="koreanOptionsRow" style="display:none;">
-          <div class="label-row">
-            <span class="label">Korean formality</span>
-          </div>
-          <select id="koreanFormality">
-            <option value="formal">Formal</option>
-            <option value="casual">Casual</option>
-          </select>
+          <div id="explanation" class="outbox"></div>
         </div>
       </div>
 
-      <div class="row">
-        <div class="controls-row">
-          <button id="translateBtn" class="btn btn-primary">Translate</button>
-          <button id="speakBtn" class="btn btn-secondary" disabled>Play translation</button>
-          <button id="explainBtn" class="btn btn-secondary" disabled>Explain this</button>
-          <span class="pill" id="sourceLangPill" style="display:none;">
-            <span class="pill-label">Detected source:</span>
-            <span id="sourceLangValue"></span>
-          </span>
-        </div>
-        <div id="error"></div>
-      </div>
-
-      <div class="outputs">
-        <div class="row">
-          <div class="label-row">
-            <span class="label">Translation</span>
-            <button id="copyTranslationBtn" class="mini-btn" disabled>Copy</button>
+      <div class="meta">
+        <div class="meta-left">
+          <div class="segment" title="Speaker affects Thai wording preference">
+            <label><input type="radio" name="speaker" value="Male" checked> Male</label>
+            <label style="margin-left:10px;"><input type="radio" name="speaker" value="Female"> Female</label>
           </div>
-          <div id="translation" class="output-box"></div>
+
+          <!-- Keep existing option rows for JS compatibility; hidden by default -->
+          <div id="thaiOptionsRow" class="hidden-rows">
+            <select id="thaiFormality">
+              <option>Casual friendly</option>
+              <option>More polite</option>
+            </select>
+          </div>
+
+          <div id="chineseOptionsRow" class="hidden-rows">
+            <select id="chineseScript">
+              <option>Simplified</option>
+              <option>Traditional</option>
+            </select>
+          </div>
+
+          <div id="japaneseOptionsRow" class="hidden-rows">
+            <select id="japanesePoliteness">
+              <option>Casual</option>
+              <option>Polite</option>
+            </select>
+          </div>
+
+          <div id="koreanOptionsRow" class="hidden-rows">
+            <select id="koreanFormality">
+              <option>Casual</option>
+              <option>Formal</option>
+            </select>
+          </div>
         </div>
 
-        <div class="row">
-          <div class="label-row">
-            <span class="label">Phonetic</span>
-            <button id="copyPhoneticBtn" class="mini-btn" disabled>Copy</button>
-          </div>
-          <div id="phonetic" class="output-box small"></div>
-        </div>
-
-        <div class="row">
-          <div class="label-row">
-            <span class="label">Notes</span>
-            <button id="copyNotesBtn" class="mini-btn" disabled>Copy</button>
-          </div>
-          <div id="notes" class="output-box small"></div>
-        </div>
-
-        <div class="row">
-          <div class="label-row">
-            <span class="label">Explanation</span>
-            <button id="copyExplanationBtn" class="mini-btn" disabled>Copy</button>
-          </div>
-          <div id="explanation" class="output-box small"></div>
+        <div class="small-muted" id="sourceLangPill2" style="display:none;">
+          Detected: <span id="sourceLangValue2"></span>
         </div>
       </div>
     </div>
+
+    <div class="footer-note">Audio uses your device’s built-in text-to-speech.</div>
   </div>
+
+  <script>
+  // Keep a tiny swap handler without touching existing JS logic.
+  (function() {
+    const swapBtn = document.getElementById('swapBtn');
+    const src = document.getElementById('sourceLang');
+    const tgt = document.getElementById('targetLang');
+    if (swapBtn && src && tgt) {
+      swapBtn.addEventListener('click', () => {
+        const srcVal = src.value;
+        const tgtVal = tgt.value;
+        // If source is auto, swap only target into source? Keep simple:
+        if (srcVal === 'auto') {
+          // swap target into source, and set target to English as a reasonable default
+          src.value = tgtVal;
+          tgt.value = 'English';
+        } else {
+          src.value = tgtVal === 'auto' ? 'auto' : tgtVal;
+          tgt.value = srcVal === 'auto' ? 'English' : srcVal;
+        }
+      });
+    }
+  })();
+  </script>
 
   <script>
     const backendUrl = '/.netlify/functions/translate';
