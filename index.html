@@ -237,6 +237,23 @@ input[type="radio"]{ accent-color: var(--accent); }
 
 /* simple inline svg icons */
 svg{ display:block; }
+
+.controlsbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  padding:12px;
+  border-bottom:1px solid rgba(148,163,184,.16);
+  align-items:center;
+}
+.thaiRow{ display:block; }
+.hidden-rows{ display:none; }
+@media (max-width: 520px){
+  .controlsbar{ gap:8px; }
+  .segment{ width:100%; justify-content:center; }
+  .controlsbar select{ width:100%; }
+}
+
 </style>
 </head>
 <body>
@@ -292,6 +309,45 @@ svg{ display:block; }
         </select>
       </div>
 
+      <div class="controlsbar">
+        <div class="segment" title="Speaker affects Thai wording preference">
+          <label><input type="radio" name="speaker" value="Male" checked> Male</label>
+          <label style="margin-left:10px;"><input type="radio" name="speaker" value="Female"> Female</label>
+        </div>
+
+        <div id="thaiOptionsRow" class="thaiRow">
+          <select id="thaiFormality" aria-label="Thai tone">
+            <option>Casual friendly</option>
+            <option>More polite</option>
+          </select>
+        </div>
+
+        <div id="chineseOptionsRow" class="hidden-rows">
+          <select id="chineseScript" aria-label="Chinese script">
+            <option>Simplified</option>
+            <option>Traditional</option>
+          </select>
+        </div>
+
+        <div id="japaneseOptionsRow" class="hidden-rows">
+          <select id="japanesePoliteness" aria-label="Japanese style">
+            <option>Casual</option>
+            <option>Polite</option>
+          </select>
+        </div>
+
+        <div id="koreanOptionsRow" class="hidden-rows">
+          <select id="koreanFormality" aria-label="Korean style">
+            <option>Casual</option>
+            <option>Formal</option>
+          </select>
+        </div>
+
+        <div class="small-muted" id="sourceLangPill2" style="display:none; margin-left:auto;">
+          Detected: <span id="sourceLangValue2"></span>
+        </div>
+      </div>
+
       <div class="panes">
         <div class="pane">
           <div class="pane-head">
@@ -317,13 +373,7 @@ svg{ display:block; }
                 </svg>
               </button>
 
-              <button class="iconbtn" id="explainBtn" title="Explain" disabled>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 18h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                  <path d="M9 9a3 3 0 016 0c0 2-3 2-3 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/>
-                </svg>
-              </button>
+              <button class="iconbtn" id="explainBtn" title="Explain" disabled style="display:none;"></button>
             </div>
           </div>
 
@@ -358,23 +408,9 @@ svg{ display:block; }
           </div>
           <div id="notes" class="outbox"></div>
 
-          <div class="pane-head" style="margin-top:12px;">
-            <div class="label">Explanation</div>
-            <div class="iconbar">
-              <button class="copy-pill" id="copyExplanationBtn" title="Copy explanation" disabled>Copy</button>
-            </div>
-          </div>
-          <div id="explanation" class="outbox"></div>
+          <div style="display:none;"><button class="copy-pill" id="copyExplanationBtn" disabled>Copy</button><div id="explanation" class="outbox"></div></div>
         </div>
       </div>
-
-      <div class="meta">
-        <div class="meta-left">
-          <div class="segment" title="Speaker affects Thai wording preference">
-            <label><input type="radio" name="speaker" value="Male" checked> Male</label>
-            <label style="margin-left:10px;"><input type="radio" name="speaker" value="Female"> Female</label>
-          </div>
-
           <!-- Keep existing option rows for JS compatibility; hidden by default -->
           <div id="thaiOptionsRow" class="hidden-rows">
             <select id="thaiFormality">
