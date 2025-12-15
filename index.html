@@ -249,9 +249,35 @@ svg{ display:block; }
 .thaiRow{ display:block; }
 .hidden-rows{ display:none; }
 @media (max-width: 520px){
-  .controlsbar{ gap:8px; }
-  .segment{ width:100%; justify-content:center; }
-  .controlsbar select{ width:100%; }
+  .controlsbar{ 
+    gap:8px; 
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    align-items:center;
+  }
+  .controlsbar .segment{
+    width:auto;
+    justify-content:flex-start;
+    grid-column: 1 / 2;
+  }
+  .controlsbar #thaiOptionsRow{
+    grid-column: 2 / 3;
+    justify-self:end;
+  }
+  .controlsbar select{
+    width:100%;
+    max-width: 220px;
+  }
+  /* keep script option rows full width when they appear */
+  .controlsbar #chineseOptionsRow,
+  .controlsbar #japaneseOptionsRow,
+  .controlsbar #koreanOptionsRow{
+    grid-column: 1 / -1;
+    justify-self:stretch;
+  }
+  .controlsbar #sourceLangPill2{
+    grid-column: 1 / -1;
+  }
 }
 
 </style>
