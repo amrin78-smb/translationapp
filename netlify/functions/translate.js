@@ -110,15 +110,28 @@ Translate from ${src} to ${tgt}.
 Critical rules:
 - Output MUST be valid JSON only. No code fences. No extra text.
 - If the input is 1–3 words, behave like a bilingual dictionary.
-- Prefer real target-language words over transliteration.
-- If translating Malay/Indonesian food/fruit terms into Thai, use the common Thai term (not phonetic borrowing).
-- Thai output must NOT include ครับ or ค่ะ (politeness handled by UI).
-- Notes MUST be in English only.
-- If target is Thai, provide phonetic in Latin characters (RTGS-like is fine).
+- Prefer real target-language words over transliteration. Transliterate only when the proper target term is unknown or commonly borrowed.
+- If translating Malay/Indonesian food/fruit terms into Thai, use the common Thai term (not phonetic borrowing) when it exists.
+
+Thai style rules (when target is Thai):
+- Make the Thai translation sound like natural everyday spoken Thai.
+- Thai tone preference: ${thaiTone}. Speaker: ${speaker}.
+- If thaiTone is "Casual friendly": DO NOT include polite particles (ครับ/ค่ะ) in the translation.
+- If thaiTone is "More polite": include exactly ONE polite particle at the end if it sounds natural:
+  - male speaker -> ครับ
+  - female speaker -> ค่ะ
+- Avoid overly formal structures like "เราจะได้...มาอย่างไร" unless the user’s input is clearly formal. Prefer common spoken patterns such as "…ต้องทำยังไง", "…ทำยังไง", "…เอายังไง", "…ยังไงดี" where appropriate.
+
+Phonetic rules:
+- If target is Thai, provide phonetic in Latin characters WITH tone marks where possible, using Thai-learning-friendly diacritics (e.g., yàak, dâi, an níi, yang-ngai). Keep it readable and consistent.
+
+Other language options:
 - For Chinese: use ${cnScript || "default script"} if specified.
 - For Japanese style: ${jpStyle || "default"} if specified.
 - For Korean style: ${krStyle || "default"} if specified.
-- Thai tone preference: ${thaiTone}; Speaker: ${speaker}. (This affects wording choice, not adding ครับ/ค่ะ.)
+
+Notes rules:
+- Notes MUST be in English only.
 
 Required JSON format:
 {
@@ -127,7 +140,8 @@ Required JSON format:
   "translation": "...",
   "phonetic": "...",
   "notes": "..."
-}`;
+}
+`;
 
     const data1 = await callChatCompletions(systemPrompt, text, 0.2);
     let raw = stripCodeFences(data1.choices?.[0]?.message?.content || "");
