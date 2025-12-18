@@ -280,6 +280,15 @@ svg{ display:block; }
   }
 }
 
+
+/* Make Translate button text-based (mobile clarity) */
+#translateBtn{
+  min-width: 104px;
+  padding: 10px 14px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
 </style>
 </head>
 <body>
@@ -379,17 +388,7 @@ svg{ display:block; }
           <div class="pane-head">
             <div class="label">Input</div>
             <div class="iconbar">
-              <button class="iconbtn" id="translateBtn" title="Translate">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M4 5h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M4 12h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M4 19h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M14 8h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M17 5v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M14 19l6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M20 19v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </button>
+              <button class="iconbtn" id="translateBtn" title="Translate">Translate</button>
 
               <button class="iconbtn" id="speakBtn" title="Play translation" disabled>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
