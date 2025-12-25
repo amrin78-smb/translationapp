@@ -99,6 +99,17 @@ Target: ${translation}`;
     const opts = options || {};
     const thaiTone = opts.thaiTone || opts.thai_tone || "Casual friendly";
     const speaker = opts.speaker || opts.gender || "Male";
+
+const speakerRaw = String(speaker || "").trim();
+const speakerLower = speakerRaw.toLowerCase();
+const speakerNorm =
+  speakerLower.startsWith("f") || speakerLower === "woman" || speakerLower === "female"
+    ? "Female"
+    : "Male";
+
+// Thai polite particle derived from speaker selection (only used when Thai tone = "More polite")
+const politeParticle = speakerNorm === "Female" ? "ค่ะ" : "ครับ";
+const politeParticlePhonetic = speakerNorm === "Female" ? "khâ" : "khráp";
     const cnScript = opts.chineseScript || opts.chinese_script; // Simplified/Traditional
     const jpStyle = opts.japaneseStyle || opts.japanese_style;   // Polite/Casual
     const krStyle = opts.koreanStyle || opts.korean_style;       // Formal/Casual
@@ -115,14 +126,13 @@ Critical rules:
 
 Thai style rules (when target is Thai):
 - Make the Thai translation sound like natural everyday spoken Thai.
-- Thai tone preference: ${thaiTone}. Speaker: ${speaker}.
+- Thai tone preference: ${thaiTone}. Speaker: ${speakerNorm}.
 - If thaiTone is "Casual friendly": DO NOT include polite particles (ครับ/ค่ะ) in the translation.
-- If thaiTone is "More polite": include exactly ONE polite particle at the end if it sounds natural:
-  - male speaker -> ครับ
-  - female speaker -> ค่ะ
+- If thaiTone is "More polite": end the translation with exactly ONE polite particle at the very end: ${politeParticle}
 - Avoid overly formal structures like "เราจะได้...มาอย่างไร" unless the user’s input is clearly formal. Prefer common spoken patterns such as "…ต้องทำยังไง", "…ทำยังไง", "…เอายังไง", "…ยังไงดี" where appropriate.
 
 Phonetic rules:
+- If Thai tone is "More polite", ensure the phonetic ends with the matching particle (${politeParticlePhonetic}).
 - If target is Thai, provide phonetic in Latin characters WITH tone marks where possible, using Thai-learning-friendly diacritics (e.g., yàak, dâi, an níi, yang-ngai). Keep it readable and consistent.
 
 Other language options:
