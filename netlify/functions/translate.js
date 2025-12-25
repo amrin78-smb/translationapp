@@ -30,6 +30,7 @@ exports.handler = async (event) => {
   const { action, text, sourceLang, targetLang, options, translation } = payload;
 
   const headers = {
+      "x-app-version": APP_VERSION,
     "Access-Control-Allow-Origin": "*",
     "Content-Type": "application/json",
   };
@@ -215,7 +216,7 @@ function applyThaiParticle(outObj, opts) {
 
     const outFixed = applyThaiParticle(out, { tgt, thaiTone: (typeof thaiTone !== "undefined" ? thaiTone : payload.thaiTone), speakerNorm: (typeof speakerNorm !== "undefined" ? speakerNorm : (payload.speakerNorm || payload.speaker || payload.gender || "Male")) });
 
-    return { statusCode: 200, headers, body: JSON.stringify(outFixed) };
+    return { statusCode: 200, headers, body: JSON.stringify({ ...outFixed, _meta: { version: APP_VERSION } }) };
   } catch (err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
