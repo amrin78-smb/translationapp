@@ -167,6 +167,43 @@ Required JSON format:
       parsed = JSON.parse(raw); // throws if still invalid
     }
 
+function normalizeThaiTone(tone) {
+  const t = String(tone || "").toLowerCase();
+  if (t.includes("polite")) return "More polite";
+  return "Casual friendly";
+}
+
+function stripThaiParticle(s) {
+  return String(s || "").replace(/[\s\u200b]+$/g, "").replace(/([\.!?。！？…]+)?\s*(ครับ|ค่ะ|คะ)\s*$/u, "").trim();
+}
+
+function stripPhoneticParticle(s) {
+  return String(s || "").replace(/[\s\u200b]+$/g, "").replace(/([\.!?]+)?\s*(khrab|khrap|khráp|khâ|kha|ka)\s*$/iu, "").trim();
+}
+
+function applyThaiParticle(outObj, opts) {
+  const targetIsThai = String(outObj.target_lang || "").toLowerCase() === "thai" || String(opts.tgt || "").toLowerCase() === "thai";
+  if (!targetIsThai) return outObj;
+
+  const tone = normalizeThaiTone(opts.thaiTone);
+  const speaker = String(opts.speakerNorm || "Male");
+  const particle = speaker === "Female" ? "ค่ะ" : "ครับ";
+  const particlePh = speaker === "Female" ? "khâ" : "khráp";
+
+  let t = stripThaiParticle(outObj.translation);
+  let p = stripPhoneticParticle(outObj.phonetic);
+
+  if (tone === "More polite") {
+    // Append exactly one particle
+    if (t) t = t + " " + particle;
+    if (p) p = p + " " + particlePh;
+  } else {
+    // Casual friendly: ensure no particle
+    // nothing to append
+  }
+
+  return { ...outObj, translation: t, phonetic: p };
+}
     // Normalize keys expected by the UI
     const out = {
       source_lang: parsed.source_lang || src,
@@ -176,7 +213,9 @@ Required JSON format:
       notes: parsed.notes || "",
     };
 
-    return { statusCode: 200, headers, body: JSON.stringify(out) };
+    const outFixed = applyThaiParticle(out, { tgt, thaiTone: (typeof thaiTone !== "undefined" ? thaiTone : payload.thaiTone), speakerNorm: (typeof speakerNorm !== "undefined" ? speakerNorm : (payload.speakerNorm || payload.speaker || payload.gender || "Male")) });
+
+    return { statusCode: 200, headers, body: JSON.stringify(outFixed) };
   } catch (err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
