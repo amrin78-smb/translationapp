@@ -345,12 +345,8 @@ svg{ display:block; }
       </div>
 
       <div class="controlsbar">
-        <div class="segment" title="Speaker affects Thai wording preference">
-          <label><input type="radio" name="speaker" value="Male" checked> Male</label>
-          <label style="margin-left:10px;"><input type="radio" name="speaker" value="Female"> Female</label>
-        </div>
-
-        <div id="thaiOptionsRow" class="thaiRow">
+        <!-- Speaker (male/female) selector removed -->
+<div id="thaiOptionsRow" class="thaiRow">
           <select id="thaiFormality" aria-label="Thai tone">
             <option>Casual friendly</option>
             <option>More polite</option>
@@ -519,7 +515,8 @@ svg{ display:block; }
     const sourceLangPill = document.getElementById('sourceLangPill');
     const sourceLangValue = document.getElementById('sourceLangValue');
 
-    const genderInputs = document.querySelectorAll('input[name="gender"]');
+    // Speaker selector removed
+    const genderInputs = [];
 
     const thaiOptionsRow = document.getElementById('thaiOptionsRow');
     const chineseOptionsRow = document.getElementById('chineseOptionsRow');
@@ -559,10 +556,7 @@ svg{ display:block; }
       return langCodeMap[label] || 'en-US';
     }
 
-    function getGender() {
-      for (const g of genderInputs) {
-        if (g.checked) return g.value;
-      }
+        function getGender() { return 'neutral'; }
       return 'male';
     }
 
@@ -585,24 +579,11 @@ svg{ display:block; }
       utterance.lang = langCode;
       window.speechSynthesis.speak(utterance);
     }
-
-    function applyThaiPoliteness() {
-      if (targetLangEl.value !== 'Thai' || !baseThaiTranslation) return;
-      const gender = getGender();
-      const particleText = gender === 'female' ? 'ค่ะ' : 'ครับ';
-      translationEl.textContent = baseThaiTranslation + ' ' + particleText;
-      lastTranslationText = translationEl.textContent;
-
-      if (baseThaiPhonetic) {
-        let phon = baseThaiPhonetic.replace(/\s*(khrab|khrap|khráp|kha|khâ)\s*$/i, '');
-        const particlePhon = gender === 'female' ? 'kha' : 'khrab';
-        phoneticEl.textContent = phon + ' ' + particlePhon;
-      }
+    // applyThaiPoliteness removed (no particles)
     }
 
     function getOptionsPayload() {
-      return {
-        gender: getGender(),
+            return {
         thai_formality: thaiFormalityEl.value,
         chinese_script: chineseScriptEl.value,
         japanese_politeness: japanesePolitenessEl.value,
@@ -630,10 +611,7 @@ svg{ display:block; }
         alert('Unable to copy');
       }
     }
-
-    genderInputs.forEach((input) => {
-      input.addEventListener('change', () => {
-        applyThaiPoliteness();
+    // speaker change listeners removed
       });
     });
 
@@ -705,10 +683,10 @@ svg{ display:block; }
         }
 
         if (targetLang === 'Thai' && baseTranslation) {
-          baseTranslation = baseTranslation.replace(/\s*(ครับ|ค่ะ)\s*$/u, '');
-          baseThaiTranslation = baseTranslation;
-          baseThaiPhonetic = basePhon;
-          applyThaiPoliteness();
+          // No particles; display as-is (backend also strips)
+          translationEl.textContent = baseTranslation;
+          phoneticEl.textContent = basePhon;
+          lastTranslationText = baseTranslation;
         } else {
           translationEl.textContent = baseTranslation;
           phoneticEl.textContent = basePhon;
