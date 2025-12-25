@@ -32,7 +32,7 @@ exports.handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Content-Type": "application/json",
-    "x-app-version": "v9-working-base-thai-particle-postprocess",
+    "x-app-version": "v10-remove-gender-particles",
   };
 
   const stripCodeFences = (s) => {
@@ -48,7 +48,6 @@ exports.handler = async (event) => {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-    "x-app-version": "v9-working-base-thai-particle-postprocess",
       },
       body: JSON.stringify({
         model: "gpt-4o",
@@ -99,26 +98,15 @@ Target: ${translation}`;
 
     // Options are passed through (tone, gender, script toggles) but the prompt remains robust even if options are missing.
     const opts = options || {};
-    // Also accept top-level fields for compatibility
-    if (!opts.speaker && payload.speaker) opts.speaker = payload.speaker;
-    if (!opts.gender && payload.gender) opts.gender = payload.gender;
-    if (!opts.thaiTone && payload.thaiTone) opts.thaiTone = payload.thaiTone;
-    if (!opts.thai_tone && payload.thai_tone) opts.thai_tone = payload.thai_tone;
-    if (!opts.tone && payload.tone) opts.tone = payload.tone;
-
     const thaiTone = opts.thaiTone || opts.thai_tone || "Casual friendly";
     const speaker = opts.speaker || opts.gender || "Male";
 
 const speakerRaw = String(speaker || "").trim();
 const speakerLower = speakerRaw.toLowerCase();
 const speakerNorm =
-  speakerLower.startsWith("f") || speakerLower === "woman" || speakerLower === "female"
     ? "Female"
     : "Male";
 
-// Thai polite particle derived from speaker selection (only used when Thai tone = "More polite")
-const politeParticle = speakerNorm === "Female" ? "ค่ะ" : "ครับ";
-const politeParticlePhonetic = speakerNorm === "Female" ? "khâ" : "khráp";
     const cnScript = opts.chineseScript || opts.chinese_script; // Simplified/Traditional
     const jpStyle = opts.japaneseStyle || opts.japanese_style;   // Polite/Casual
     const krStyle = opts.koreanStyle || opts.korean_style;       // Formal/Casual
@@ -135,9 +123,6 @@ Critical rules:
 
 Thai style rules (when target is Thai):
 - Make the Thai translation sound like natural everyday spoken Thai.
-- Thai tone preference: ${thaiTone}. Speaker: ${speakerNorm}.
-- If thaiTone is "Casual friendly": DO NOT include polite particles (ครับ/ค่ะ) in the translation.
-- If thaiTone is "More polite": end the translation with exactly ONE polite particle at the very end: ${politeParticle}
 - Avoid overly formal structures like "เราจะได้...มาอย่างไร" unless the user’s input is clearly formal. Prefer common spoken patterns such as "…ต้องทำยังไง", "…ทำยังไง", "…เอายังไง", "…ยังไงดี" where appropriate.
 
 Phonetic rules:
@@ -176,13 +161,7 @@ Required JSON format:
       parsed = JSON.parse(raw); // throws if still invalid
     }
 
-// --- Post-processing to enforce Thai particles deterministically (model may drift) ---
-const normalizeTone = (t) => {
-  const s = String(t || "").toLowerCase();
-  return s.includes("polite") ? "More polite" : "Casual friendly";
-};
-
-const stripThaiParticle = (s) => {
+const stripThaiParticleAlways = (s) => {
   if (!s) return "";
   return String(s)
     .replace(/[\s\u200b]+$/g, "")
@@ -190,7 +169,7 @@ const stripThaiParticle = (s) => {
     .trim();
 };
 
-const stripPhoneticParticle = (s) => {
+const stripPhoneticParticleAlways = (s) => {
   if (!s) return "";
   return String(s)
     .replace(/[\s\u200b]+$/g, "")
@@ -198,21 +177,17 @@ const stripPhoneticParticle = (s) => {
     .trim();
 };
 
-const applyThaiPoliteness = (outObj) => {
-  const targetIsThai = String(outObj.target_lang || tgt).toLowerCase() === "thai" || String(tgt).toLowerCase() === "thai";
+const removeThaiPoliteParticles = (outObj) => {
+  const targetIsThai =
+    String(outObj.target_lang || tgt).toLowerCase() === "thai" ||
+    String(tgt).toLowerCase() === "thai";
   if (!targetIsThai) return outObj;
 
-  const toneNorm = normalizeTone(thaiTone);
-  let translation2 = stripThaiParticle(outObj.translation || "");
-  let phonetic2 = stripPhoneticParticle(outObj.phonetic || "");
-
-  if (toneNorm === "More polite") {
-    const particle = politeParticle; // derived earlier from speakerNorm
-    const particlePh = politeParticlePhonetic;
-    if (translation2) translation2 = translation2 + " " + particle;
-    if (phonetic2) phonetic2 = phonetic2 + " " + particlePh;
-  }
-  return { ...outObj, translation: translation2, phonetic: phonetic2 };
+  return {
+    ...outObj,
+    translation: stripThaiParticleAlways(outObj.translation || ""),
+    phonetic: stripPhoneticParticleAlways(outObj.phonetic || ""),
+  };
 };
 
     // Normalize keys expected by the UI
@@ -224,7 +199,7 @@ const applyThaiPoliteness = (outObj) => {
       notes: parsed.notes || "",
     };
 
-    out = applyThaiPoliteness(out);
+    out = removeThaiPoliteParticles(out);
 
     return { statusCode: 200, headers, body: JSON.stringify(out) };
   } catch (err) {
