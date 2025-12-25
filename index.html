@@ -345,8 +345,12 @@ svg{ display:block; }
       </div>
 
       <div class="controlsbar">
-        <!-- Speaker (male/female) selector removed -->
-<div id="thaiOptionsRow" class="thaiRow">
+        <div class="segment" title="Speaker affects Thai wording preference">
+          <label><input type="radio" name="speaker" value="Male" checked> Male</label>
+          <label style="margin-left:10px;"><input type="radio" name="speaker" value="Female"> Female</label>
+        </div>
+
+        <div id="thaiOptionsRow" class="thaiRow">
           <select id="thaiFormality" aria-label="Thai tone">
             <option>Casual friendly</option>
             <option>More polite</option>
@@ -384,7 +388,7 @@ svg{ display:block; }
           <div class="pane-head">
             <div class="label">Input</div>
             <div class="iconbar">
-              <button class="iconbtn" id="translateBtn" title="Translate">Translate</button>
+              <button id="translateBtn" class="iconbtn" id="translateBtn" title="Translate">Translate</button>
 
               <button class="iconbtn" id="speakBtn" title="Play translation" disabled>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -515,8 +519,7 @@ svg{ display:block; }
     const sourceLangPill = document.getElementById('sourceLangPill');
     const sourceLangValue = document.getElementById('sourceLangValue');
 
-    // Speaker selector removed
-    const genderInputs = [];
+    const genderInputs = document.querySelectorAll('input[name="gender"]');
 
     const thaiOptionsRow = document.getElementById('thaiOptionsRow');
     const chineseOptionsRow = document.getElementById('chineseOptionsRow');
@@ -556,7 +559,10 @@ svg{ display:block; }
       return langCodeMap[label] || 'en-US';
     }
 
-        function getGender() { return 'neutral'; }
+    function getGender() {
+      for (const g of genderInputs) {
+        if (g.checked) return g.value;
+      }
       return 'male';
     }
 
@@ -579,11 +585,24 @@ svg{ display:block; }
       utterance.lang = langCode;
       window.speechSynthesis.speak(utterance);
     }
-    // applyThaiPoliteness removed (no particles)
+
+    function applyThaiPoliteness() {
+      if (targetLangEl.value !== 'Thai' || !baseThaiTranslation) return;
+      const gender = getGender();
+      const particleText = gender === 'female' ? 'ค่ะ' : 'ครับ';
+      translationEl.textContent = baseThaiTranslation + ' ' + particleText;
+      lastTranslationText = translationEl.textContent;
+
+      if (baseThaiPhonetic) {
+        let phon = baseThaiPhonetic.replace(/\s*(khrab|khrap|khráp|kha|khâ)\s*$/i, '');
+        const particlePhon = gender === 'female' ? 'kha' : 'khrab';
+        phoneticEl.textContent = phon + ' ' + particlePhon;
+      }
     }
 
     function getOptionsPayload() {
-            return {
+      return {
+        gender: getGender(),
         thai_formality: thaiFormalityEl.value,
         chinese_script: chineseScriptEl.value,
         japanese_politeness: japanesePolitenessEl.value,
@@ -611,7 +630,10 @@ svg{ display:block; }
         alert('Unable to copy');
       }
     }
-    // speaker change listeners removed
+
+    genderInputs.forEach((input) => {
+      input.addEventListener('change', () => {
+        applyThaiPoliteness();
       });
     });
 
@@ -683,10 +705,10 @@ svg{ display:block; }
         }
 
         if (targetLang === 'Thai' && baseTranslation) {
-          // No particles; display as-is (backend also strips)
-          translationEl.textContent = baseTranslation;
-          phoneticEl.textContent = basePhon;
-          lastTranslationText = baseTranslation;
+          baseTranslation = baseTranslation.replace(/\s*(ครับ|ค่ะ)\s*$/u, '');
+          baseThaiTranslation = baseTranslation;
+          baseThaiPhonetic = basePhon;
+          applyThaiPoliteness();
         } else {
           translationEl.textContent = baseTranslation;
           phoneticEl.textContent = basePhon;
@@ -764,5 +786,25 @@ svg{ display:block; }
     updateOptionVisibility();
     setCopyButtonsState();
   </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('translateBtn');
+  const form = document.getElementById('translateForm');
+
+  const runTranslate = async (e) => {
+    if (e) e.preventDefault();
+    if (typeof translate === 'function') {
+      translate();
+    } else {
+      console.error('translate() function not found');
+    }
+  };
+
+  if (btn) btn.addEventListener('click', runTranslate);
+  if (form) form.addEventListener('submit', runTranslate);
+});
+</script>
+
 </body>
 </html>
